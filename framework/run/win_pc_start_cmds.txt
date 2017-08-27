@@ -1,0 +1,14 @@
+set SP_ROOT=E:\sp_gcloud\forget-your-passwords\default
+
+// Nameserver
+q E:\sp_gcloud\forget-your-passwords\default\development\qcore\boot.q -target E:\sp_gcloud\forget-your-passwords\default\development\qcore\service.q -start -zone research -svc_name SP_SERVICE -log_level debug -nameservers sangeetha-pc.home:2015 -c 500 500
+
+// Test svc
+q E:\sp_gcloud\forget-your-passwords\default\development\qcore\boot.q -target E:\sp_gcloud\forget-your-passwords\default\development\qcore\service.q  -zone research -svc_name SP_SERVICE -log_level debug -nameservers sangeetha-pc.home:2015,sangeetha-pc.home:2025 -sp_server SP_SERVER -start -c 500 500
+
+// Test TP svc
+q .\sp_gcloud\forget-your-passwords\default\development\qcore\boot.q -target .\sp_gcloud\forget-your-passwords\default\development\qcore\tpsvc.q -zone research -instance 1 -svc_name SP_SERVICE_TP -log_level debug -nameservers sangeetha-pc.home:2015,sangeetha-pc.home:2025 -sp_server SP_SERVER -logdir .\sp_gcloud\test_sp\txn_logs -logname test -schemafile test_schema.q -start -c 500 500
+
+// Test RT svc
+q .\sp_gcloud\forget-your-passwords\default\development\qcore\boot.q -target .\sp_gcloud\forget-your-passwords\default\development\qcore\rtsvc.q  -zone research -instance 1 -svc_name SP_SERVICE -log_level debug -nameservers sangeetha-pc.home:2015,sangeetha-pc.home:2025 -sp_server SP_SERVER -tpsvc SP_SERVICE_TP -tpinst 1 -start -c 500 500
+
