@@ -20,6 +20,8 @@ To install this software:
 
 e.g. on linux, run ~/q/l32/q
 
+- RaspberryPi users, please note that additional libraries for the pi are available at http://kx.com/q/e/raspberrypi.zip
+
 When running the trial on Linux 64-bit systems, you may need to
 install the package ia32-libs. Depending on your distribution, usually this
 can be installed with one of the commands:
