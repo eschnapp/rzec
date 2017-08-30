@@ -14,26 +14,12 @@
     .sp.log.info func, "User Manager is ready...";
     };
     
+               
+.rz.userman.get_user_by_steamid:{[steamid]
 
-.rz.userman.fetch_by_steam_id:{[stid]
-    func: "[.rz.userman.fetch_by_steam_id]: ";
-    t: select from .sp.cache.tables.users where steam_id = stid;
-    if[ (count t) <= 0;
-          .sp.log.info func, "unable to locate user with steam id ", stid, "... will create a new user...";
-          t: .rz.userman.create_new[`steam;stid] ];
-    : first exec user_id from t;
-    };
-    
-
-.rz.userman.create_user:{[stid;discid]
-    
-   func: "[.rz.userman.create_user]: ";
-   new_id = first (-1?0Ng);
-   
+  r: select from .sp.cache.tables[`users] where 
 
 
-   };
-    
-                
+  }; 
 .sp.comp.register_component[`user_mgr;enlist `common`cache;.sp.cache.on_comp_start];
 

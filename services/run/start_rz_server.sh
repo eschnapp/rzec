@@ -11,5 +11,5 @@ $SP_BIN_PATH/boot_core.sh -target $SP_ROOT/framework/sp_server.q \
 	-zone $ZONE \
 	-svc_name RZ_SERVER \
 	-c 500 500 \
-	> $LOGPATH/sp_server.$DATE.log 2>&1
+	> $LOGPATH/sp_server.$DATE.log &
  
