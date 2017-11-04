@@ -7,36 +7,22 @@
     .sp.log.info func, "Starting...";
     .rz.rust.fh.connections:: ([server_id: `$()]; handle: `int$());
     .rz.rust.fh.ready:: 0b;
+    .rz.rust.fh.timer_ival:: 5000; // 5 second to start with on updates...
+
     .sp.log.info func, "Setting up the websocket handler";
     .z.ws: .rz.rust.fh.on_remote_update;
-	
-    .sp.log.info func, "Subscribing to servers tickerplant data";
-    .rz.rust.fh.servers_rt:: `SERVERS_RT;
-    .sp.cache.add_callback_handler[`sfh;.rz.rust.fh.servers_rt;`server_defs;.rz.rust.fh.on_serverdef_update;.rz.rust.fh.on_serverdef_ready];
-    .sp.cache.add_clients[.rz.rust.fh.servers_rt;`server_defs;{[d;p] select by server_id from d}; {[t;p] select by server_id from (value t)};`; `];
 
-    //.sp.log.info func, "Adding the expiration timer...";
-    //.rz.rust.fh.timer_id:: .sp.cron.add_timer[1000;-1;.rz.rust.fh.on_timer];
+    .rz.rust.fh.serverdefs::
+         ([] server_id: enlist 1i;hostname: enlist ("sp-devwin1.eastus.cloudapp.azure.com"); rcon_port: enlist 28016i;rcon_pwd: enlist ("none4u"));
+
+    .rz.rust.fh.open_connection ./: (flip value flip (select server_id, hostname, rcon_port, rcon_pwd from svrs));
+
+    // start the timer...
+    .sp.cron.add_timer[.rz.rust.fh.timer_ival; -1; .rz.rust.fh.on_timer];
 
     .sp.log.info func, "Completed...";
     :1b;
     };
-
-.rz.rust.fh.on_serverdef_ready:{[svc;topic]
-    func: "[.rz.rust.fh.on_serverdef_ready]: ";
-    .sp.log.debug func, "Server definitions synchronized, opening sockets to all rust servers...";
-    svrs: select from .sp.cache.tables[`server_defs] where game_type = `rust;
-    show svrs;
-    .rz.rust.fh.open_connection ./: (flip value flip (select server_id, hostname, rcon_port, rcon_pwd from svrs));
-	
-    };
-
-.rz.rust.fh.on_serverdef_update:{[svc;topic;data;upd_type]
-    func: "[.rz.rust.fh.on_serverdef_update]: ";
-    .sp.log.debug func, "SERVERDEF UPDATE...!";   
-    if[ upd_type = `update;
-        .rz.rust.fh.open_connection ./: (flip value flip (select server_id, hostname, rcon_port, rcon_pwd from data))];
-  };
 
 
 .rz.rust.fh.open_connection:{ [sid;hname;rcport;rcpwd]
@@ -66,11 +52,32 @@
         if[ null sid;
             .sp.log.error func "Failed to locate the server id for the remote update!";
             :0b];
- 
-        record: ([] time: enlist .z.T; server_id: enlist sid; msg: enlist (res[`Message]); identifier: enlist `int$(res[`Identifier]); msg_type: enlist `$(res[`Type]); stack_trace: enlist (res[`Stacktrace]));
+        if[ res[`Type] = `Generic;
+            .rz.rust.fh.process_generic_msg[sid;res]];
 
-       .sp.re.exec[`RCON_TP;`;(`.sp.tp.upd; `rust; record);3000]; 
+        if[ res[`Type] = `Chat;
+            .rz.rust.fh.process_chat_msg[sid;res]];         
   };
+
+.rz.rust.fh.process_generic_msg:{[sid;data]
+        msg: data[`Message];
+        id: data[`Identifier];
+
+        record: ([] time: enlist .z.T; server_id: enlist sid; msg: enlist msg; identifier: enlist id);
+        .sp.re.exec[`RUST_RT;`;(`.sp.tp.upd;`events;record);5000];
+    };
+
+
+.rz.rust.fh.process_chat_msg:{[sid;data]
+        obj: .j.k data[`Message];
+        record: ([] time: enlist .z.T;
+                    msg: enlist obj[`Message];
+                    userid: enlist obj[`UserId];
+                    username: enlist obj[`Username];
+                    color: enlist obj[`Color];
+                    server_time: enlist obj[`Time]);
+        .sp.re.exec[`RUST_RT;`;(`.sp.tp.upd;`chat;record);5000];
+    };
   
 .sp.comp.register_component[`rust_fh;`common`cache;.rz.rust.fh.on_comp_start];
 
