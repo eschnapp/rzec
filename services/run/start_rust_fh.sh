@@ -12,5 +12,4 @@ $SP_ROOT/services/run/boot_core.sh \
 	-svc_name RUST_FH  \
 	-nameservers localhost:33400 \
 	-sp_server RZ_SERVER  \
-	 > $LOGPATH/rust_fh.$DATE.log &
-
+	-e 1

@@ -6,7 +6,7 @@
 .rz.rust.fh.on_comp_start:{
     func : "[.rz.rust.fh.on_comp_start] : ";
     .sp.log.info func, "Starting...";
-    .rz.rust.fh.connections:: ([server_id: `$()]; handle: `int$());
+    .rz.rust.fh.connections:: ([server_id: `long$()]; handle: `int$());
     .rz.rust.fh.ready:: 0b;
     .rz.rust.fh.timer_ival:: 5000; // 5 second to start with on updates...
 
@@ -16,7 +16,7 @@
     .rz.rust.fh.serverdefs::
          ([] server_id: enlist 1i;hostname: enlist ("sp-devwin1.eastus.cloudapp.azure.com"); rcon_port: enlist 28016i;rcon_pwd: enlist ("none4u"));
 
-    .rz.rust.fh.open_connection ./: (flip value flip (select server_id, hostname, rcon_port, rcon_pwd from svrs));
+    .rz.rust.fh.open_connection ./: (flip value flip (select server_id, hostname, rcon_port, rcon_pwd from .rz.rust.fh.serverdefs));
 
     // start the timer...
     .sp.cron.add_timer[.rz.rust.fh.timer_ival; -1; .rz.rust.fh.on_timer];
@@ -28,7 +28,7 @@
 
 .rz.rust.fh.open_connection:{ [sid;hname;rcport;rcpwd]
 	func: "[.rz.rust.fh.open_connection]: ";
-	r:(`$":ws://",(string hname),":",(string rcport))"GET /",(string rcpwd)," HTTP/1.1\r\nHost: ",(string hname),":",(string rcport),"\r\n\r\n";
+	r:(`$":ws://",(raze string hname),":",(raze string rcport))"GET /",(raze string rcpwd)," HTTP/1.1\r\nHost: ",(raze string hname),":",(raze string rcport),"\r\n\r\n";
 	if[ (type r) <> 0h; 
 		.sp.log.error func, "Failed to open handle to remote server...";
 		show r;
